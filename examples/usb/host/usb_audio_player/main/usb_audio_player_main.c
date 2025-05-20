@@ -22,10 +22,10 @@ static const char *TAG = "usb_audio_player";
 #define UAC_TASK_PRIORITY       5
 #define USER_TASK_PRIORITY      2
 #define SPIFFS_BASE             "/spiffs"
-#define MP3_FILE_NAME           "/new_epic.mp3"
+#define MP3_FILE_NAME           "/dukou.mp3"
 #define BIT1_SPK_START          (0x01 << 0)
-#define DEFAULT_VOLUME          45
-#define DEFAULT_UAC_FREQ        48000
+#define DEFAULT_VOLUME          20
+#define DEFAULT_UAC_FREQ        44100
 #define DEFAULT_UAC_BITS        16
 #define DEFAULT_UAC_CH          2
 
@@ -94,6 +94,10 @@ static esp_err_t _audio_player_write_fn(void *audio_buffer, size_t len, size_t *
         return ESP_ERR_INVALID_STATE;
     }
     *bytes_written = 0;
+    // 打印前两个采样点的PCM数据
+    // int16_t *samples = (int16_t *)audio_buffer;
+    // ESP_LOGI(TAG, "First two samples: L[0]=%d, R[0]=%d, L[1]=%d, R[1]=%d",
+    //          samples[0], samples[1], samples[2], samples[3]);
     esp_err_t ret = uac_host_device_write(s_spk_dev_handle, audio_buffer, len, timeout_ms);
     if (ret == ESP_OK) {
         *bytes_written = len;

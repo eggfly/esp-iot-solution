@@ -2,4 +2,5 @@ dependencies:
   chmorgan/esp-audio-player: "1.0.*"
   idf: ">=5.0" # The version of the ESP-IDF that esp-audio-player requires
   usb_host_uac:
-    version: "1.2.*"
+    git: https://github.com/eggfly/esp-usb.git
+    path: host/class/uac/usb_host_uac
