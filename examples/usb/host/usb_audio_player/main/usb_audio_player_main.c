@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include <inttypes.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -11,23 +5,53 @@
 #include "freertos/queue.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "esp_spiffs.h"
 #include "usb/usb_host.h"
 #include "usb/uac_host.h"
 #include "audio_player.h"
+//SD
+#include <string.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+#include "driver/sdmmc_host.h"
+#include <stdlib.h>
+#include <stdint.h>
+#include <dirent.h>
+//GPIO
+#include "driver/gpio.h"
+#include <sys/time.h>
+#include "esp_timer.h"
+
 
 static const char *TAG = "usb_audio_player";
+static const char *SDTAG = "SD TEST";
+
+#define PAUSE_GPIO GPIO_NUM_0
+#define RESUME_GPIO GPIO_NUM_45
+#define STOP_GPIO GPIO_NUM_48
+
+#define SD_PIN_NUM_CLK 3
+#define SD_PIN_NUM_CMD 4
+#define SD_PIN_NUM_D0  14
+#define MOUNT_POINT "/sdcard"
 
 #define USB_HOST_TASK_PRIORITY  5
 #define UAC_TASK_PRIORITY       5
 #define USER_TASK_PRIORITY      2
-#define SPIFFS_BASE             "/spiffs"
-#define MP3_FILE_NAME           "/dukou.mp3"
+#define SPIFFS_BASE             "/sdcard"
+
 #define BIT1_SPK_START          (0x01 << 0)
-#define DEFAULT_VOLUME          20
-#define DEFAULT_UAC_FREQ        44100
+#define DEFAULT_VOLUME          30
+#define DEFAULT_UAC_FREQ        48000
 #define DEFAULT_UAC_BITS        16
 #define DEFAULT_UAC_CH          2
+
+#define MAX_FILES 2048
+
+char *music_file_name;
+char *music_files[MAX_FILES];  
+int music_count = 0;
 
 static QueueHandle_t s_event_queue = NULL;
 static uac_host_device_handle_t s_spk_dev_handle = NULL;
@@ -71,6 +95,76 @@ typedef struct {
     };
 } s_event_queue_t;
 
+
+void button_task(void *arg)
+{
+    ESP_LOGI(TAG, "button_task started");
+
+    while (1) {
+        if (gpio_get_level(PAUSE_GPIO) == 0) {
+            ESP_LOGI(TAG, "next song--------------------------------------------------------");
+            int index = random() % music_count; 
+            music_file_name = music_files[index];
+            audio_player_stop();
+            vTaskDelay(pdMS_TO_TICKS(80)); 
+            
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(30)); 
+    }
+}
+
+void button_gpio_init()
+{
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (1ULL << PAUSE_GPIO) | (1ULL << RESUME_GPIO) | (1ULL << STOP_GPIO),
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+    };
+    gpio_config(&io_conf);
+}
+
+
+static void sd_init(void) {
+    esp_err_t ret;
+
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+        .format_if_mount_failed = false,
+        .max_files = 5,
+        .allocation_unit_size = 16 * 1024
+    };
+
+    sdmmc_card_t *card;
+    const char mount_point[] = MOUNT_POINT;
+    ESP_LOGI(SDTAG, "Initializing SD card using SDMMC 1-bit mode");
+
+    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
+
+    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+    slot_config.width = 1;  // 1-bit mode
+
+    slot_config.clk = SD_PIN_NUM_CLK;   // CLK
+    slot_config.cmd = SD_PIN_NUM_CMD;   // CMD
+    slot_config.d0  = SD_PIN_NUM_D0;    // D0
+    // D1~D3 不使用
+
+    gpio_set_pull_mode(slot_config.clk, GPIO_PULLUP_ONLY);
+    gpio_set_pull_mode(slot_config.cmd, GPIO_PULLUP_ONLY);
+    gpio_set_pull_mode(slot_config.d0, GPIO_PULLUP_ONLY);
+
+    ESP_LOGI(SDTAG, "Mounting filesystem");
+    ret = esp_vfs_fat_sdmmc_mount(mount_point, &host, &slot_config, &mount_config, &card);
+    if (ret != ESP_OK) {
+        ESP_LOGE(SDTAG, "Failed to mount filesystem. (%s)", esp_err_to_name(ret));
+        return;
+    }
+
+    ESP_LOGI(SDTAG, "Filesystem mounted");
+    sdmmc_card_print_info(stdout, card);
+}
+
 static esp_err_t _audio_player_mute_fn(AUDIO_PLAYER_MUTE_SETTING setting)
 {
     if (s_spk_dev_handle == NULL) {
@@ -94,7 +188,6 @@ static esp_err_t _audio_player_write_fn(void *audio_buffer, size_t len, size_t *
         return ESP_ERR_INVALID_STATE;
     }
     *bytes_written = 0;
-    // 打印前两个采样点的PCM数据
     // int16_t *samples = (int16_t *)audio_buffer;
     // ESP_LOGI(TAG, "First two samples: L[0]=%d, R[0]=%d, L[1]=%d, R[1]=%d",
     //          samples[0], samples[1], samples[2], samples[3]);
@@ -136,13 +229,13 @@ static void _audio_player_callback(audio_player_cb_ctx_t *ctx)
             break;
         }
         ESP_ERROR_CHECK(uac_host_device_suspend(s_spk_dev_handle));
-        ESP_LOGI(TAG, "Play in loop");
-        s_fp = fopen(SPIFFS_BASE MP3_FILE_NAME, "rb");
+        ESP_LOGW(TAG, "Play in loop"); 
+        s_fp = fopen(music_file_name, "rb");
         if (s_fp) {
-            ESP_LOGI(TAG, "Playing '%s'", MP3_FILE_NAME);
+            ESP_LOGI(TAG, "Playing '%s'", music_file_name);
             audio_player_play(s_fp);
         } else {
-            ESP_LOGE(TAG, "unable to open filename '%s'", MP3_FILE_NAME);
+            ESP_LOGE(TAG, "unable to open filename callback '%s'", music_file_name);
         }
         break;
     }
@@ -274,12 +367,12 @@ static void uac_lib_task(void *arg)
                     };
                     ESP_ERROR_CHECK(uac_host_device_start(uac_device_handle, &stm_config));
                     s_spk_dev_handle = uac_device_handle;
-                    s_fp = fopen(SPIFFS_BASE MP3_FILE_NAME, "rb");
+                    s_fp = fopen(music_file_name, "rb");
                     if (s_fp) {
-                        ESP_LOGI(TAG, "Playing '%s'", MP3_FILE_NAME);
+                        ESP_LOGI(TAG, "Playing '%s'", music_file_name);
                         audio_player_play(s_fp);
                     } else {
-                        ESP_LOGE(TAG, "unable to open filename '%s'", MP3_FILE_NAME);
+                        ESP_LOGE(TAG, "unable to open filename uac play'%s'", music_file_name);
                     }
                     break;
                 }
@@ -319,18 +412,55 @@ static void uac_lib_task(void *arg)
     ESP_ERROR_CHECK(uac_host_uninstall());
 }
 
+void scan_music_files_recursive(const char *base_path) {
+    DIR *dir = opendir(base_path);
+    struct dirent *entry;
+
+    if (!dir) {
+        ESP_LOGE(TAG, "Failed to open dir: %s", base_path);
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL && music_count < MAX_FILES) {
+        char full_path[512];
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_path, entry->d_name);
+
+        if (entry->d_type == DT_DIR) {
+            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                scan_music_files_recursive(full_path);
+            }
+        } else {
+            if (strstr(entry->d_name, ".MP3") || strstr(entry->d_name, ".mp3") ||
+                strstr(entry->d_name, ".WAV") || strstr(entry->d_name, ".wav")) {
+                music_files[music_count] = strdup(full_path);
+                music_count++;
+            }
+        }
+    }
+
+    closedir(dir);
+}
+
+void scan_music_files() {
+    music_count = 0;
+    scan_music_files_recursive("/sdcard");
+    ESP_LOGI(TAG, "Found %d music(s)", music_count);
+    // ESP_LOGI(TAG, "%s", music_files[0]);
+    int index = random() % music_count; 
+    music_file_name = music_files[index]; 
+}
+
 void app_main(void)
 {
+    srandom((unsigned int)esp_timer_get_time());
+    sd_init();
+    scan_music_files();
+    button_gpio_init();
+    xTaskCreate(button_task, "button_task", 4096, NULL, 8, NULL);
+
     s_event_queue = xQueueCreate(10, sizeof(s_event_queue_t));
     assert(s_event_queue != NULL);
 
-    esp_vfs_spiffs_conf_t conf = {
-        .base_path = SPIFFS_BASE,
-        .partition_label = NULL,
-        .max_files = 2,
-        .format_if_mount_failed = true,
-    };
-    ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
     audio_player_config_t config = {.mute_fn = _audio_player_mute_fn,
                                     .write_fn = _audio_player_write_fn,
                                     .clk_set_fn = _audio_player_std_clock,
@@ -346,9 +476,11 @@ void app_main(void)
     ret = xTaskCreatePinnedToCore(usb_lib_task, "usb_events", 4096, (void *)uac_task_handle,
                                   USB_HOST_TASK_PRIORITY, NULL, 0);
     assert(ret == pdTRUE);
+    
 
+    
     while (1) {
-        vTaskDelay(100);
+        vTaskDelay(1000);
     }
 
 }
