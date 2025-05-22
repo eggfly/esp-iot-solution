@@ -4,6 +4,36 @@
 
 static const char *TAG = "mp3";
 
+static size_t skip_id3v2_tag(FILE *fp) {
+    uint8_t header[10];
+    size_t skip_bytes = 0;
+
+    ESP_LOGW(TAG, "Running skip_id3v2_tag...");
+
+    fseek(fp, 0, SEEK_SET);
+    if (fread(header, 1, 10, fp) == 10) {
+        if (memcmp(header, "ID3", 3) == 0) {
+            uint32_t tag_size = ((header[6] & 0x7F) << 21) |
+                                ((header[7] & 0x7F) << 14) |
+                                ((header[8] & 0x7F) << 7) |
+                                (header[9] & 0x7F);
+
+            skip_bytes = 10 + tag_size;
+            fseek(fp, skip_bytes, SEEK_SET);
+
+            ESP_LOGW(TAG, "ID3v2 tag found, skipped %zu bytes.", skip_bytes);
+        } else {
+            ESP_LOGW(TAG, "No ID3v2 tag found, no bytes skipped.");
+            fseek(fp, 0, SEEK_SET);
+        }
+    } else {
+        ESP_LOGW(TAG, "Failed to read ID3v2 header, resetting to start of file.");
+        fseek(fp, 0, SEEK_SET);
+    }
+
+    return skip_bytes;
+}
+
 bool is_mp3(FILE *fp) {
     bool is_mp3_file = false;
 
@@ -51,6 +81,10 @@ bool is_mp3(FILE *fp) {
  * @return true if data remains, false on error or end of file
  */
 DECODE_STATUS decode_mp3(HMP3Decoder mp3_decoder, FILE *fp, decode_data *pData, mp3_instance *pInstance) {
+    if (!pInstance->tag_skipped) {
+        skip_id3v2_tag(fp);
+        pInstance->tag_skipped = true;
+    }
     MP3FrameInfo frame_info;
 
     size_t unread_bytes = pInstance->bytes_in_data_buf - (pInstance->read_ptr - pInstance->data_buf);
@@ -140,6 +174,16 @@ DECODE_STATUS decode_mp3(HMP3Decoder mp3_decoder, FILE *fp, decode_data *pData, 
                 //
                 // We may want to consider a more sophisticated approach here at a later time.
                 ESP_LOGE(TAG, "status error %d", mp3_dec_err);
+                if (mp3_dec_err == -6){
+                    ESP_LOGE(TAG, "tag-false");
+                    pInstance->tag_skipped = false;
+                }
+                else{
+                    ESP_LOGE(TAG, "tag-true");
+                    fseek(fp, 0, SEEK_SET);
+                }
+                    
+                
                 return DECODE_STATUS_NO_DATA_CONTINUE;
             }
         }
@@ -164,6 +208,5 @@ DECODE_STATUS decode_mp3(HMP3Decoder mp3_decoder, FILE *fp, decode_data *pData, 
         /* Sync word not found in frame. Drop data that was read until a word boundary */
         ESP_LOGE(TAG, "MP3 sync word not found, dropping %d bytes", bytes_to_drop);
     }
-
     return DECODE_STATUS_CONTINUE;
 }

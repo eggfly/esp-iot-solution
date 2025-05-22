@@ -363,10 +363,10 @@ static esp_err_t aplay_file(audio_instance_t *i, FILE *fp)
                     (i2s_format.channels != i->output.fmt.channels) ||
                     (i2s_format.bits_per_sample != i->output.fmt.bits_per_sample)) {
                 i2s_format = i->output.fmt;
-                LOGI_1("format change: sr=%d, bit=%d, ch=%d",
-                        i2s_format.sample_rate,
-                        i2s_format.bits_per_sample,
-                        i2s_format.channels);
+                // LOGI_1("format change: sr=%d, bit=%d, ch=%d",
+                //         i2s_format.sample_rate,
+                //         i2s_format.bits_per_sample,
+                //         i2s_format.channels);
                 i2s_slot_mode_t channel_setting = (i2s_format.channels == 1) ? I2S_SLOT_MODE_MONO : I2S_SLOT_MODE_STEREO;
                 ret = i->config.clk_set_fn(i2s_format.sample_rate,
                             i2s_format.bits_per_sample,
@@ -382,11 +382,11 @@ static esp_err_t aplay_file(audio_instance_t *i, FILE *fp)
              */
             size_t i2s_bytes_written = 0;
             size_t bytes_to_write = i->output.frame_count * i->output.fmt.channels * (i2s_format.bits_per_sample / 8);
-            LOGI_2("c %d, bps %d, bytes %d, frame_count %d",
-                i->output.fmt.channels,
-                i2s_format.bits_per_sample,
-                bytes_to_write,
-                i->output.frame_count);
+            // LOGI_2("c %d, bps %d, bytes %d, frame_count %d",
+            //     i->output.fmt.channels,
+            //     i2s_format.bits_per_sample,
+            //     bytes_to_write,
+            //     i->output.frame_count);
 
             i->config.write_fn(i->output.samples, bytes_to_write, &i2s_bytes_written, portMAX_DELAY);
             if(bytes_to_write != i2s_bytes_written) {
@@ -402,6 +402,7 @@ static esp_err_t aplay_file(audio_instance_t *i, FILE *fp)
     } while (true);
 
 clean_up:
+    i->mp3_data.tag_skipped = false;
     return ret;
 }
 

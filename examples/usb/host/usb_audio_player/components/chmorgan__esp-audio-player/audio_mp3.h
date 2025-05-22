@@ -42,6 +42,7 @@ typedef struct {
 
     // set to true if the end of file has been reached
     bool eof_reached;
+    bool tag_skipped;
 } mp3_instance;
 
 bool is_mp3(FILE *fp);

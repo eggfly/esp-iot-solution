@@ -42,10 +42,10 @@ bool is_wav(FILE *fp, wav_instance *pInstance) {
         }
     }
 
-    LOGI_2("sample_rate=%d, channels=%d, bps=%d",
-            wav_head->SampleRate,
-            wav_head->NumChannels,
-            wav_head->BitsPerSample);
+    // LOGI_2("sample_rate=%d, channels=%d, bps=%d",
+    //         wav_head->SampleRate,
+    //         wav_head->NumChannels,
+    //         wav_head->BitsPerSample);
 
     return true;
 }

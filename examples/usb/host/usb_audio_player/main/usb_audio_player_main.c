@@ -24,6 +24,9 @@
 #include "esp_timer.h"
 
 
+#include "driver/adc.h"
+
+
 static const char *TAG = "usb_audio_player";
 static const char *SDTAG = "SD TEST";
 
@@ -42,7 +45,7 @@ static const char *SDTAG = "SD TEST";
 #define SPIFFS_BASE             "/sdcard"
 
 #define BIT1_SPK_START          (0x01 << 0)
-#define DEFAULT_VOLUME          30
+#define DEFAULT_VOLUME          20
 #define DEFAULT_UAC_FREQ        48000
 #define DEFAULT_UAC_BITS        16
 #define DEFAULT_UAC_CH          2
@@ -102,12 +105,19 @@ void button_task(void *arg)
 
     while (1) {
         if (gpio_get_level(PAUSE_GPIO) == 0) {
+            while (gpio_get_level(PAUSE_GPIO) == 0) {
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
             ESP_LOGI(TAG, "next song--------------------------------------------------------");
             int index = random() % music_count; 
             music_file_name = music_files[index];
+            // audio_player_pause();
             audio_player_stop();
-            vTaskDelay(pdMS_TO_TICKS(80)); 
-            
+            // fclose(s_fp);
+            // s_fp = fopen(music_file_name, "rb");
+            // audio_player_play(s_fp);
+            // audio_player_stop();
+            vTaskDelay(pdMS_TO_TICKS(80));
         }
 
         vTaskDelay(pdMS_TO_TICKS(30)); 
@@ -232,7 +242,7 @@ static void _audio_player_callback(audio_player_cb_ctx_t *ctx)
         ESP_LOGW(TAG, "Play in loop"); 
         s_fp = fopen(music_file_name, "rb");
         if (s_fp) {
-            ESP_LOGI(TAG, "Playing '%s'", music_file_name);
+            ESP_LOGI(TAG, "2 Playing '%s'", music_file_name);
             audio_player_play(s_fp);
         } else {
             ESP_LOGE(TAG, "unable to open filename callback '%s'", music_file_name);
@@ -369,7 +379,7 @@ static void uac_lib_task(void *arg)
                     s_spk_dev_handle = uac_device_handle;
                     s_fp = fopen(music_file_name, "rb");
                     if (s_fp) {
-                        ESP_LOGI(TAG, "Playing '%s'", music_file_name);
+                        ESP_LOGI(TAG, "1 Playing '%s'", music_file_name);
                         audio_player_play(s_fp);
                     } else {
                         ESP_LOGE(TAG, "unable to open filename uac play'%s'", music_file_name);
@@ -432,6 +442,10 @@ void scan_music_files_recursive(const char *base_path) {
         } else {
             if (strstr(entry->d_name, ".MP3") || strstr(entry->d_name, ".mp3") ||
                 strstr(entry->d_name, ".WAV") || strstr(entry->d_name, ".wav")) {
+                // ignore filename with startsWith "."
+                if (entry->d_name[0] == '.') {
+                    continue;
+                }
                 music_files[music_count] = strdup(full_path);
                 music_count++;
             }
@@ -446,15 +460,18 @@ void scan_music_files() {
     scan_music_files_recursive("/sdcard");
     ESP_LOGI(TAG, "Found %d music(s)", music_count);
     // ESP_LOGI(TAG, "%s", music_files[0]);
+
+    unsigned int seed = (unsigned int)esp_timer_get_time();
+    srandom(seed);
     int index = random() % music_count; 
     music_file_name = music_files[index]; 
 }
 
 void app_main(void)
 {
-    srandom((unsigned int)esp_timer_get_time());
     sd_init();
     scan_music_files();
+
     button_gpio_init();
     xTaskCreate(button_task, "button_task", 4096, NULL, 8, NULL);
 
