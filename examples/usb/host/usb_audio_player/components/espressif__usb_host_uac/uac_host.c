@@ -1561,7 +1561,7 @@ static esp_err_t _uac_host_device_add(uint8_t addr, usb_device_handle_t dev_hdl,
     UAC_GOTO_ON_FALSE(uac_device->device_busy =  xSemaphoreCreateMutex(), ESP_ERR_NO_MEM, "Unable to create mutex");
 
     // Allocate control transfer buffer
-    UAC_GOTO_ON_ERROR(usb_host_transfer_alloc(64, 0, &uac_device->ctrl_xfer), "Unable to allocate transfer buffer");
+    UAC_GOTO_ON_ERROR(usb_host_transfer_alloc(192, 0, &uac_device->ctrl_xfer), "Unable to allocate transfer buffer");
 
     UAC_GOTO_ON_FALSE_CRITICAL(s_uac_driver, ESP_ERR_INVALID_STATE);
     UAC_GOTO_ON_FALSE_CRITICAL(s_uac_driver->client_handle, ESP_ERR_INVALID_STATE);
@@ -2738,7 +2738,7 @@ static const uac2_clock_source_desc_t *find_uac2_clock_source(const uint8_t *des
 // 新增：读取UAC2.0时钟源支持的采样率（GET_RANGE）
 static esp_err_t uac2_get_clock_source_sample_rates(uac_device_t *uac_device, uint8_t clock_id, uint32_t *rates, int *rate_num, int max_num) {
     // UAC2.0 GET_RANGE 请求
-    uint8_t data[64] = {0};
+    uint8_t data[128] = {0};
     uac_cs_request_t req = {
         .bmRequestType = 0xA1, // 设备->主机, class, interface
         .bRequest = UAC_GET_RANGE,
