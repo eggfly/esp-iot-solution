@@ -1405,16 +1405,27 @@ static esp_err_t _uac_host_device_add(uint8_t addr, usb_device_handle_t dev_hdl,
                 switch (uac_cs_desc->bDescriptorSubtype) {
                 case UAC_AC_HEADER: {
                     const uac_ac_header_desc_t *header_desc = (const uac_ac_header_desc_t *)uac_cs_desc;
-                    if (header_desc->bcdADC != 0x0100) {
+                    if (header_desc->bcdADC == 0x0100) {
+                        // UAC1.0
+                        uint8_t *cs_ac_desc = calloc(header_desc->wTotalLength, sizeof(uint8_t));
+                        UAC_GOTO_ON_FALSE(cs_ac_desc, ESP_ERR_NO_MEM, "Unable to allocate memory for UAC Control CS descriptor");
+                        memcpy(cs_ac_desc, uac_cs_desc, header_desc->wTotalLength);
+                        uac_device->cs_ac_desc = cs_ac_desc;
+                        ESP_LOGD(TAG, "UAC version 0x%04X", header_desc->bcdADC);
+                    } else if (header_desc->bcdADC == 0x0200) {
+                        // UAC2.0
+                        ESP_LOGI(TAG, "UAC2.0 device detected, bcdADC=0x%04X", header_desc->bcdADC);
+                        // 这里可以为UAC2.0分配自己的描述符缓存，后续采样率/alt setting/数据流适配用
+                        uint8_t *cs_ac_desc = calloc(header_desc->wTotalLength, sizeof(uint8_t));
+                        UAC_GOTO_ON_FALSE(cs_ac_desc, ESP_ERR_NO_MEM, "Unable to allocate memory for UAC2.0 Control CS descriptor");
+                        memcpy(cs_ac_desc, uac_cs_desc, header_desc->wTotalLength);
+                        uac_device->cs_ac_desc = cs_ac_desc;
+                        // TODO: 后续采样率/alt setting/数据流适配在此分支实现
+                    } else {
                         ESP_LOGW(TAG, "UAC version 0x%04X not supported", header_desc->bcdADC);
                         free(uac_device);
                         return ESP_ERR_NOT_SUPPORTED;
                     }
-                    uint8_t *cs_ac_desc = calloc(header_desc->wTotalLength, sizeof(uint8_t));
-                    UAC_GOTO_ON_FALSE(cs_ac_desc, ESP_ERR_NO_MEM, "Unable to allocate memory for UAC Control CS descriptor");
-                    memcpy(cs_ac_desc, uac_cs_desc, header_desc->wTotalLength);
-                    uac_device->cs_ac_desc = cs_ac_desc;
-                    ESP_LOGD(TAG, "UAC version 0x%04X", header_desc->bcdADC);
                     break;
                 }
                 default:
