@@ -603,6 +603,9 @@ typedef struct {
     uint8_t  wLockDelay[2]; // uint16_t, 小端
 } __attribute__((packed)) uac2_as_cs_ep_desc_t;
 
+// UAC1.0/UAC2.0 请求码
+#define UAC_GET_RANGE 0x82
+
 #ifdef __cplusplus
 }
 #endif //__cplusplus

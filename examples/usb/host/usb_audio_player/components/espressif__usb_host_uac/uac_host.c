@@ -23,6 +23,7 @@
 #include "usb/usb_host.h"
 #include "usb/uac_host.h"
 #include "usb/usb_types_ch9.h"
+#include "usb/uac.h"
 
 // UAC spinlock
 static portMUX_TYPE uac_lock = portMUX_INITIALIZER_UNLOCKED;
@@ -75,6 +76,7 @@ static portMUX_TYPE uac_lock = portMUX_INITIALIZER_UNLOCKED;
 
 static const char *TAG = "uac-host";
 
+
 #define DEFAULT_CTRL_XFER_TIMEOUT_MS        (5000)
 #define DEFAULT_ISOC_XFER_TIMEOUT_MS        (100)
 #define INTERFACE_FLAGS_OFFSET              (16)
@@ -82,6 +84,58 @@ static const char *TAG = "uac-host";
 #define UAC_EP_DIR_IN                       (0x80)
 #define VOLUME_DB_MIN                       (-127.9961f)
 #define VOLUME_DB_MAX                       (127.9961f)
+
+// 新增：UAC2.0 Clock Source/Selector/Multiplier subtype定义
+#define UAC2_CLOCK_SOURCE        0x0a
+#define UAC2_CLOCK_SELECTOR      0x0b
+#define UAC2_CLOCK_MULTIPLIER    0x0c
+#define UAC2_CS_CONTROL_SAM_FREQ 0x01
+#define UAC2_CS_CONTROL_RANGE    0x02
+
+// 新增：UAC2.0 Clock Source描述符结构体
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bClockID;
+    uint8_t  bmAttributes;
+    uint8_t  bmControls;
+    uint8_t  bAssocTerminal;
+    uint8_t  iClockSource;
+} __attribute__((packed)) uac2_clock_source_desc_t;
+
+// 新增：UAC2.0 Clock Selector描述符结构体
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bClockID;
+    uint8_t  bNrInPins;
+    uint8_t  baCSourceID[8]; // 最多8个输入
+    uint8_t  bmControls;
+    uint8_t  iClockSelector;
+} __attribute__((packed)) uac2_clock_selector_desc_t;
+
+// 新增：UAC2.0 Clock Multiplier描述符结构体
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bClockID;
+    uint8_t  bCSourceID;
+    uint8_t  bmControls;
+    uint8_t  iClockMultiplier;
+} __attribute__((packed)) uac2_clock_multiplier_desc_t;
+
+// 新增：UAC2.0 Clock Range结构体
+typedef struct {
+    uint16_t wNumSubRanges;
+    struct {
+        uint32_t min;
+        uint32_t max;
+        uint32_t res;
+    } ranges[8]; // 最多8个range
+} __attribute__((packed)) uac2_clock_range_t;
 
 /**
  * @brief UAC Device structure.
@@ -197,6 +251,9 @@ typedef struct uac_cs_request {
 static uac_driver_t *s_uac_driver;                              /*!< Internal pointer to UAC driver */
 
 // ----------------------- Private Prototypes ----------------------------------
+
+static esp_err_t uac2_get_clock_source_sample_rates(uac_device_t *uac_device, uint8_t clock_id, uint32_t *rates, int *rate_num, int max_num);
+static const uac2_clock_source_desc_t *find_uac2_clock_source(const uint8_t *desc, size_t total_len, uint8_t clock_id);
 
 static esp_err_t _uac_host_device_add(uint8_t addr, usb_device_handle_t dev_hdl, const usb_config_desc_t *config_desc, uac_device_t **uac_device_handle);
 static esp_err_t _uac_host_device_delete(uac_device_t *uac_device);
@@ -836,6 +893,62 @@ static esp_err_t uac_host_interface_add(uac_device_t *uac_device, uint8_t iface_
     UAC_ENTER_CRITICAL();
     STAILQ_INSERT_TAIL(&s_uac_driver->uac_ifaces_tailq, uac_iface, tailq_entry);
     UAC_EXIT_CRITICAL();
+
+    // 在原有代码后面，增强UAC2.0采样率支持
+    // 检查是否为UAC2.0
+    if (uac_device->cs_ac_desc) {
+        const uac2_ac_header_desc_t *uac2_hdr = (const uac2_ac_header_desc_t *)uac_device->cs_ac_desc;
+        if (uac2_hdr->bDescriptorType == UAC_CS_INTERFACE && uac2_hdr->bDescriptorSubtype == UAC_AC_HEADER && uac2_hdr->bcdADC[0] == 0x00 && uac2_hdr->bcdADC[1] == 0x02) {
+            ESP_LOGI(TAG, "UAC2.0设备，增强采样率解析");
+            // 遍历所有alt setting，查找终端->clock source
+            for (int i = 0; i < iface_alt_idx; i++) {
+                uac_iface_alt_t *iface_alt = &uac_iface->iface_alt[i];
+                uint8_t terminal_id = iface_alt->connected_terminal;
+                // 查找input/output terminal，获取bCSourceID
+                int ac_offset = 0;
+                uint8_t clock_id = 0;
+                while (ac_offset < ((uac2_hdr->wTotalLength[0]) | (uac2_hdr->wTotalLength[1]<<8))) {
+                    const uac_desc_header_t *desc = (const uac_desc_header_t *)(uac_device->cs_ac_desc + ac_offset);
+                    if (desc->bDescriptorType == UAC_CS_INTERFACE) {
+                        if ((desc->bDescriptorSubtype == UAC_AC_INPUT_TERMINAL || desc->bDescriptorSubtype == UAC_AC_OUTPUT_TERMINAL) && ((const uac2_input_terminal_desc_t *)desc)->bTerminalID == terminal_id) {
+                            if (desc->bDescriptorSubtype == UAC_AC_INPUT_TERMINAL) {
+                                clock_id = ((const uac2_input_terminal_desc_t *)desc)->bCSourceID;
+                            } else {
+                                clock_id = ((const uac2_output_terminal_desc_t *)desc)->bCSourceID;
+                            }
+                            break;
+                        }
+                    }
+                    ac_offset += desc->bLength ? desc->bLength : 1;
+                }
+                if (clock_id) {
+                    ESP_LOGI(TAG, "Interface %d alt[%d] 终端ID=%d, 时钟源ID=%d", iface_desc->bInterfaceNumber, iface_alt->alt_idx, terminal_id, clock_id);
+                    // 查找clock source描述符
+                    const uac2_clock_source_desc_t *cs = find_uac2_clock_source(uac_device->cs_ac_desc, ((uac2_hdr->wTotalLength[0]) | (uac2_hdr->wTotalLength[1]<<8)), clock_id);
+                    if (cs) {
+                        ESP_LOGI(TAG, "Clock Source: ID=%d, bmAttributes=0x%02x, bmControls=0x%02x", cs->bClockID, cs->bmAttributes, cs->bmControls);
+                        // 获取所有支持的采样率
+                        uint32_t rates[32] = {0};
+                        int rate_num = 0;
+                        if (uac2_get_clock_source_sample_rates(uac_device, clock_id, rates, &rate_num, 32) == ESP_OK) {
+                            ESP_LOGI(TAG, "Interface %d alt[%d] 支持的采样率:", iface_desc->bInterfaceNumber, iface_alt->alt_idx);
+                            for (int r = 0; r < rate_num; r++) {
+                                ESP_LOGI(TAG, "  %lu Hz", rates[r]);
+                                iface_alt->dev_alt_param.sample_freq[r] = rates[r];
+                            }
+                            iface_alt->dev_alt_param.sample_freq_type = rate_num;
+                        } else {
+                            ESP_LOGW(TAG, "无法获取采样率，可能设备不支持GET_RANGE");
+                        }
+                    } else {
+                        ESP_LOGW(TAG, "未找到Clock Source描述符，ID=%d", clock_id);
+                    }
+                } else {
+                    ESP_LOGW(TAG, "未找到终端的时钟源ID，terminal_id=%d", terminal_id);
+                }
+            }
+        }
+    }
 
     return ESP_OK;
 
@@ -2607,4 +2720,54 @@ esp_err_t uac_host_device_get_volume_db(uac_host_device_handle_t uac_dev_handle,
 fail:
     uac_host_interface_unlock(iface);
     return ret;
+}
+
+// 新增：查找UAC2.0 Clock Source描述符
+static const uac2_clock_source_desc_t *find_uac2_clock_source(const uint8_t *desc, size_t total_len, uint8_t clock_id) {
+    int offset = 0;
+    while (offset + sizeof(uac2_clock_source_desc_t) < total_len) {
+        const uac2_clock_source_desc_t *cs = (const uac2_clock_source_desc_t *)(desc + offset);
+        if (cs->bDescriptorType == UAC_CS_INTERFACE && cs->bDescriptorSubtype == UAC2_CLOCK_SOURCE && cs->bClockID == clock_id) {
+            return cs;
+        }
+        offset += cs->bLength ? cs->bLength : 1;
+    }
+    return NULL;
+}
+
+// 新增：读取UAC2.0时钟源支持的采样率（GET_RANGE）
+static esp_err_t uac2_get_clock_source_sample_rates(uac_device_t *uac_device, uint8_t clock_id, uint32_t *rates, int *rate_num, int max_num) {
+    // UAC2.0 GET_RANGE 请求
+    uint8_t data[64] = {0};
+    uac_cs_request_t req = {
+        .bmRequestType = 0xA1, // 设备->主机, class, interface
+        .bRequest = UAC_GET_RANGE,
+        .wValue = (UAC2_CS_CONTROL_SAM_FREQ << 8),
+        .wIndex = (clock_id << 8) | uac_device->ctrl_iface_num,
+        .wLength = sizeof(data),
+        .data = data,
+    };
+    size_t actual_length = 0;
+    esp_err_t ret = uac_cs_request_get(uac_device, &req, &actual_length);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "UAC2.0 GET_RANGE clock_id=%d failed", clock_id);
+        return ret;
+    }
+    if (actual_length < 2) return ESP_FAIL;
+    uint16_t n_ranges = data[0] | (data[1] << 8);
+    int idx = 2;
+    int out_num = 0;
+    for (int i = 0; i < n_ranges && idx + 12 <= actual_length && out_num < max_num; i++) {
+        uint32_t min = data[idx] | (data[idx+1]<<8) | (data[idx+2]<<16) | (data[idx+3]<<24);
+        uint32_t max = data[idx+4] | (data[idx+5]<<8) | (data[idx+6]<<16) | (data[idx+7]<<24);
+        uint32_t res = data[idx+8] | (data[idx+9]<<8) | (data[idx+10]<<16) | (data[idx+11]<<24);
+        ESP_LOGI(TAG, "UAC2.0 ClockID %d Range[%d]: min=%lu, max=%lu, res=%lu", clock_id, i, min, max, res);
+        if (res == 0) res = 1;
+        for (uint32_t rate = min; rate <= max && out_num < max_num; rate += res) {
+            rates[out_num++] = rate;
+        }
+        idx += 12;
+    }
+    *rate_num = out_num;
+    return ESP_OK;
 }
