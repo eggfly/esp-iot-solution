@@ -111,12 +111,12 @@ DECODE_STATUS decode_mp3(HMP3Decoder mp3_decoder, FILE *fp, decode_data *pData, 
 
             pData->frame_count = (frame_info.outputSamps / frame_info.nChans);
 
-            LOGI_3("mp3: channels %d, sr %d, bps %d, frame_count %d, processed %d",
-                pData->fmt.channels,
-                pData->fmt.sample_rate,
-                pData->fmt.bits_per_sample,
-                frame_info.outputSamps,
-                starting_unread_bytes - unread_bytes);
+            // LOGI_3("mp3: channels %d, sr %d, bps %d, frame_count %d, processed %d",
+            //     pData->fmt.channels,
+            //     pData->fmt.sample_rate,
+            //     pData->fmt.bits_per_sample,
+            //     frame_info.outputSamps,
+            //     starting_unread_bytes - unread_bytes);
         } else {
             if (pInstance->eof_reached) {
                 ESP_LOGE(TAG, "status error %d, but EOF", mp3_dec_err);

@@ -511,6 +511,98 @@ typedef struct {
  */
 void print_uac_descriptors(const usb_config_desc_t *cfg_desc);
 
+// ================= UAC 2.0 Descriptor Structures =================
+// 参考USB Audio Device Class 2.0规范和Linux内核sound/usb/stream.c等
+
+// UAC2.0 Audio Control Header Descriptor
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bcdADC[2];           // 注意UAC2.0为uint8_t[2]，小端
+    uint8_t  bCategory;
+    uint8_t  wTotalLength[2];     // uint16_t, 小端
+    uint8_t  bmControls;
+} __attribute__((packed)) uac2_ac_header_desc_t;
+
+// UAC2.0 Input Terminal Descriptor
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bTerminalID;
+    uint8_t  wTerminalType[2];    // uint16_t, 小端
+    uint8_t  bAssocTerminal;
+    uint8_t  bCSourceID;
+    uint8_t  bNrChannels;
+    uint8_t  bmChannelConfig[4];  // uint32_t, 小端
+    uint8_t  iChannelNames;
+    uint8_t  iTerminal;
+    uint8_t  bmControls;
+    uint8_t  iTerminalName;
+} __attribute__((packed)) uac2_input_terminal_desc_t;
+
+// UAC2.0 Output Terminal Descriptor
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bTerminalID;
+    uint8_t  wTerminalType[2];    // uint16_t, 小端
+    uint8_t  bAssocTerminal;
+    uint8_t  bSourceID;
+    uint8_t  bCSourceID;
+    uint8_t  iTerminal;
+    uint8_t  bmControls;
+    uint8_t  iTerminalName;
+} __attribute__((packed)) uac2_output_terminal_desc_t;
+
+// UAC2.0 Feature Unit Descriptor（简化版，实际可变长）
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bUnitID;
+    uint8_t  bSourceID;
+    uint8_t  bmaControls[2]; // 实际为bControlSize*(ch+1)，这里只做示例
+    uint8_t  iFeature;
+} __attribute__((packed)) uac2_feature_unit_desc_t;
+
+// UAC2.0 AS General Descriptor
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bTerminalLink;
+    uint8_t  bmControls;
+    uint8_t  bFormatType;
+    uint8_t  bmFormats[4]; // uint32_t, 小端
+    uint8_t  bNrChannels;
+    uint8_t  bmChannelConfig[4]; // uint32_t, 小端
+    uint8_t  iChannelNames;
+} __attribute__((packed)) uac2_as_general_desc_t;
+
+// UAC2.0 Format Type Descriptor (Type I)
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bFormatType;
+    uint8_t  bSubslotSize;
+    uint8_t  bBitResolution;
+} __attribute__((packed)) uac2_format_type_I_desc_t;
+
+// UAC2.0 Isochronous Audio Data Endpoint Descriptor
+typedef struct {
+    uint8_t  bLength;
+    uint8_t  bDescriptorType;
+    uint8_t  bDescriptorSubtype;
+    uint8_t  bmAttributes;
+    uint8_t  bmControls;
+    uint8_t  bLockDelayUnits;
+    uint8_t  wLockDelay[2]; // uint16_t, 小端
+} __attribute__((packed)) uac2_as_cs_ep_desc_t;
+
 #ifdef __cplusplus
 }
 #endif //__cplusplus

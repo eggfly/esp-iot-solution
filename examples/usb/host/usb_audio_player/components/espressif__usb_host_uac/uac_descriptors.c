@@ -14,6 +14,7 @@
 #include "esp_check.h"
 #include "usb/usb_host.h"
 #include "usb/uac_host.h"
+#include "usb/uac.h"
 
 // ----------------------------------------------- Descriptor Printing -------------------------------------------------
 
@@ -248,6 +249,100 @@ static void print_unknown_desc(const uac_desc_header_t *desc)
     printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
 }
 
+// ================= UAC 2.0 Descriptor Print Functions =================
+
+static void print_uac2_ac_header_desc(const uint8_t *buff)
+{
+    const uac2_ac_header_desc_t *desc = (const uac2_ac_header_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio control header descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbcdADC 0x%02x%02x\n", desc->bcdADC[1], desc->bcdADC[0]);
+    printf("\tbCategory 0x%x\n", desc->bCategory);
+    printf("\twTotalLength %d\n", desc->wTotalLength[0] | (desc->wTotalLength[1] << 8));
+    printf("\tbmControls 0x%x\n", desc->bmControls);
+}
+
+static void print_uac2_input_terminal_desc(const uint8_t *buff)
+{
+    const uac2_input_terminal_desc_t *desc = (const uac2_input_terminal_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio control input terminal descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbTerminalID %d\n", desc->bTerminalID);
+    printf("\twTerminalType 0x%x\n", desc->wTerminalType[0] | (desc->wTerminalType[1] << 8));
+    printf("\tbAssocTerminal %d\n", desc->bAssocTerminal);
+    printf("\tbCSourceID %d\n", desc->bCSourceID);
+    printf("\tbNrChannels %d\n", desc->bNrChannels);
+    printf("\tbmChannelConfig 0x%02x%02x%02x%02x\n", desc->bmChannelConfig[3], desc->bmChannelConfig[2], desc->bmChannelConfig[1], desc->bmChannelConfig[0]);
+    printf("\tiChannelNames %d\n", desc->iChannelNames);
+    printf("\tiTerminal %d\n", desc->iTerminal);
+    printf("\tbmControls 0x%x\n", desc->bmControls);
+    printf("\tiTerminalName %d\n", desc->iTerminalName);
+}
+
+static void print_uac2_output_terminal_desc(const uint8_t *buff)
+{
+    const uac2_output_terminal_desc_t *desc = (const uac2_output_terminal_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio control output terminal descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbTerminalID %d\n", desc->bTerminalID);
+    printf("\twTerminalType 0x%x\n", desc->wTerminalType[0] | (desc->wTerminalType[1] << 8));
+    printf("\tbAssocTerminal %d\n", desc->bAssocTerminal);
+    printf("\tbSourceID %d\n", desc->bSourceID);
+    printf("\tbCSourceID %d\n", desc->bCSourceID);
+    printf("\tiTerminal %d\n", desc->iTerminal);
+    printf("\tbmControls 0x%x\n", desc->bmControls);
+    printf("\tiTerminalName %d\n", desc->iTerminalName);
+}
+
+static void print_uac2_feature_unit_desc(const uint8_t *buff)
+{
+    const uac2_feature_unit_desc_t *desc = (const uac2_feature_unit_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio control feature unit descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbUnitID %d\n", desc->bUnitID);
+    printf("\tbSourceID %d\n", desc->bSourceID);
+    printf("\tbmaControls[0] 0x%x\n", desc->bmaControls[0]);
+    printf("\tbmaControls[1] 0x%x\n", desc->bmaControls[1]);
+    printf("\tiFeature %d\n", desc->iFeature);
+}
+
+static void print_uac2_as_general_desc(const uint8_t *buff)
+{
+    const uac2_as_general_desc_t *desc = (const uac2_as_general_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio stream general descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbTerminalLink %d\n", desc->bTerminalLink);
+    printf("\tbmControls 0x%x\n", desc->bmControls);
+    printf("\tbFormatType %d\n", desc->bFormatType);
+    printf("\tbmFormats 0x%02x%02x%02x%02x\n", desc->bmFormats[3], desc->bmFormats[2], desc->bmFormats[1], desc->bmFormats[0]);
+    printf("\tbNrChannels %d\n", desc->bNrChannels);
+    printf("\tbmChannelConfig 0x%02x%02x%02x%02x\n", desc->bmChannelConfig[3], desc->bmChannelConfig[2], desc->bmChannelConfig[1], desc->bmChannelConfig[0]);
+    printf("\tiChannelNames %d\n", desc->iChannelNames);
+}
+
+static void print_uac2_format_type_I_desc(const uint8_t *buff)
+{
+    const uac2_format_type_I_desc_t *desc = (const uac2_format_type_I_desc_t *)buff;
+    printf("\t*** UAC2.0 Audio stream format type I descriptor ***\n");
+    printf("\tbLength %d\n", desc->bLength);
+    printf("\tbDescriptorType 0x%x\n", desc->bDescriptorType);
+    printf("\tbDescriptorSubtype 0x%x\n", desc->bDescriptorSubtype);
+    printf("\tbFormatType %d\n", desc->bFormatType);
+    printf("\tbSubslotSize %d\n", desc->bSubslotSize);
+    printf("\tbBitResolution %d\n", desc->bBitResolution);
+}
+
+// 修改print_uac_class_descriptors，自动区分UAC1.0/2.0
 static void print_uac_class_descriptors(const usb_standard_desc_t *desc, uint8_t class, uint8_t subclass, uint8_t protocol)
 {
     if (class != USB_CLASS_AUDIO) {
@@ -255,6 +350,47 @@ static void print_uac_class_descriptors(const usb_standard_desc_t *desc, uint8_t
     }
     const uint8_t *buff = (const uint8_t *)desc;
     uac_desc_header_t *header = (uac_desc_header_t *)desc;
+    // 判断UAC2.0: bInterfaceProtocol==0x20 或 bcdADC==0x200
+    bool is_uac2 = (protocol == 0x20);
+    if (!is_uac2 && header->bDescriptorSubtype == 0x01 && desc->bDescriptorType == UAC_CS_INTERFACE) {
+        // Audio Control Header，进一步判断bcdADC
+        if (buff[4] == 0x00 && buff[5] == 0x02) is_uac2 = true;
+    }
+    if (is_uac2) {
+        if (subclass == UAC_SUBCLASS_AUDIOCONTROL) {
+            switch (header->bDescriptorSubtype) {
+            case UAC_AC_HEADER:
+                print_uac2_ac_header_desc(buff);
+                break;
+            case UAC_AC_INPUT_TERMINAL:
+                print_uac2_input_terminal_desc(buff);
+                break;
+            case UAC_AC_OUTPUT_TERMINAL:
+                print_uac2_output_terminal_desc(buff);
+                break;
+            case UAC_AC_FEATURE_UNIT:
+                print_uac2_feature_unit_desc(buff);
+                break;
+            default:
+                goto unknown;
+            }
+        } else if (subclass == UAC_SUBCLASS_AUDIOSTREAMING && desc->bDescriptorType == UAC_CS_INTERFACE) {
+            switch (header->bDescriptorSubtype) {
+            case UAC_AS_GENERAL:
+                print_uac2_as_general_desc(buff);
+                break;
+            case UAC_AS_FORMAT_TYPE:
+                print_uac2_format_type_I_desc(buff);
+                break;
+            default:
+                goto unknown;
+            }
+        } else {
+            goto unknown;
+        }
+        return;
+    }
+    // 兼容原UAC1.0流程
     if (subclass == UAC_SUBCLASS_AUDIOCONTROL) {
         switch (header->bDescriptorSubtype) {
         case UAC_AC_HEADER:
