@@ -1,0 +1,389 @@
+
+*** Configuration descriptor ***
+bLength 9
+bDescriptorType 2
+wTotalLength 430
+bNumInterfaces 5
+bConfigurationValue 1
+iConfiguration 0
+bmAttributes 0xa0
+bMaxPower 300mA
+*** Interface Association Descriptor ***
+bLength 8
+bDescriptorType 11
+bFirstInterface 0
+bInterfaceCount 3
+bFunctionClass 0x1
+bFunctionSubClass 0x0
+bFunctionProtocol 0x20
+iFunction 0
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 0
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x1
+	bInterfaceProtocol 0x20
+	iInterface 0
+	*** Audio control header descriptor ***
+	bLength 9
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bcdADC 0x200
+	wTotalLength 37124
+	bInCollection 0
+	*** Audio control input terminal descriptor ***
+	bLength 17
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bTerminalID 1
+	wTerminalType 0x101
+	bAssocTerminal 0
+	bNrChannels 9
+	wChannelConfig 0x0302
+	iChannelNames 0
+	iTerminal 0
+	*** Audio control feature unit descriptor ***
+	bLength 18
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 2
+	bSourceID 8
+	bControlSize 3
+	bmaControls[ch0] 0x0
+	iFeature 0
+	*** Audio control output terminal descriptor ***
+	bLength 12
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x3
+	bTerminalID 3
+	wTerminalType 0x402
+	bAssocTerminal 4
+	bSourceID 2
+	iTerminal 9
+	*** Audio control input terminal descriptor ***
+	bLength 17
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bTerminalID 4
+	wTerminalType 0x402
+	bAssocTerminal 3
+	bNrChannels 10
+	wChannelConfig 0x0401
+	iChannelNames 0
+	iTerminal 0
+	*** Audio control feature unit descriptor ***
+	bLength 14
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 5
+	bSourceID 4
+	bControlSize 3
+	bmaControls[ch0] 0x0
+	iFeature 0
+	*** Audio control output terminal descriptor ***
+	bLength 12
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x3
+	bTerminalID 6
+	wTerminalType 0x101
+	bAssocTerminal 0
+	bSourceID 5
+	iTerminal 10
+	*** Audio control feature unit descriptor ***
+	bLength 14
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 7
+	bSourceID 4
+	bControlSize 3
+	bmaControls[ch0] 0x0
+	iFeature 0
+	*** Audio control mixer unit descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x4
+	bUnitID 8
+	bNrInPins 2
+	bSourceID[0] 1
+	bSourceID[1] 7
+	bNrChannels 2
+	wChannelConfig 0x3
+	iChannelNames 0
+	bmControls 0x0
+	iMixer 0
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x24
+	bDescriptorSubtype 0xa
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x24
+	bDescriptorSubtype 0xa
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x81	EP 1 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 6
+		bInterval 1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 0
+	bNumEndpoints 0
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 1
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 1
+	bDelay 5
+	wFormatTag 257
+	*** Audio stream format type descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bNrChannels 3
+	bSubframeSize 24
+	bBitResolution 7
+	bSamFreqType 5
+	tSamFreq[0] 2100482
+	tSamFreq[1] 524545
+	tSamFreq[2] 293
+	tSamFreq[3] 6553856
+	tSamFreq[4] 264448
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x2	EP 2 OUT
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 288
+		bInterval 1
+		*** Audio stream endpoint general descriptor ***
+		bLength 8
+		bDescriptorType 0x25
+		bDescriptorSubtype 0x1
+		bmAttributes 0x0
+		bLockDelayUnits 0
+		wLockDelay 25601
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 2
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 1
+	bDelay 5
+	wFormatTag 257
+	*** Audio stream format type descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bNrChannels 2
+	bSubframeSize 16
+	bBitResolution 7
+	bSamFreqType 5
+	tSamFreq[0] 12586242
+	tSamFreq[1] 524544
+	tSamFreq[2] 293
+	tSamFreq[3] 6553856
+	tSamFreq[4] 264448
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x2	EP 2 OUT
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 192
+		bInterval 1
+		*** Audio stream endpoint general descriptor ***
+		bLength 8
+		bDescriptorType 0x25
+		bDescriptorSubtype 0x1
+		bmAttributes 0x0
+		bLockDelayUnits 0
+		wLockDelay 25601
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 0
+	bNumEndpoints 0
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 1
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 6
+	bDelay 5
+	wFormatTag 257
+	*** Audio stream format type descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bNrChannels 2
+	bSubframeSize 16
+	bBitResolution 7
+	bSamFreqType 5
+	tSamFreq[0] 6294915
+	tSamFreq[1] 524544
+	tSamFreq[2] 293
+	tSamFreq[3] 6553856
+	tSamFreq[4] 264448
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x83	EP 3 IN
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 96
+		bInterval 1
+		*** Audio stream endpoint general descriptor ***
+		bLength 8
+		bDescriptorType 0x25
+		bDescriptorSubtype 0x1
+		bmAttributes 0x0
+		bLockDelayUnits 0
+		wLockDelay 25601
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 2
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 6
+	bDelay 5
+	wFormatTag 257
+	*** Audio stream format type descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bNrChannels 3
+	bSubframeSize 24
+	bBitResolution 7
+	bSamFreqType 5
+	tSamFreq[0] 9440643
+	tSamFreq[1] 524544
+	tSamFreq[2] 293
+	tSamFreq[3] 6553856
+	tSamFreq[4] 264448
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x83	EP 3 IN
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 144
+		bInterval 1
+		*** Audio stream endpoint general descriptor ***
+		bLength 8
+		bDescriptorType 0x25
+		bDescriptorSubtype 0x1
+		bmAttributes 0x0
+		bLockDelayUnits 0
+		wLockDelay 25601
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 3
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x3
+	bInterfaceSubClass 0x0
+	bInterfaceProtocol 0x0
+	iInterface 0
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x85	EP 5 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 64
+		bInterval 1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 4
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x3
+	bInterfaceSubClass 0x0
+	bInterfaceProtocol 0x0
+	iInterface 0
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x86	EP 6 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 64
+		bInterval 1
+W (2150) uac-host: UAC version 0x0200 not supported
+E (2156) uac-host: uac_host_device_open(2006): Unable to add UAC device
+Guru Meditation Error: Core  0 panic'ed (LoadProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x42017bc3  PS      : 0x00060230  A0      : 0x82009e1c  A1      : 0x3fca60c0  
+--- 0x42017bc3: uac_host_device_open at /Users/eggfly/github/esp-iot-solution/examples/usb/host/usb_audio_player/managed_components/espressif__usb_host_uac/uac_host.c:2048
+
+A2      : 0x00000106  A3      : 0x3fca6214  A4      : 0xffffffff  A5      : 0x00000000  
+A6      : 0x00000001  A7      : 0x3fca61f4  A8      : 0x00000000  A9      : 0x3fca6090  
+A10     : 0x00000000  A11     : 0x3fca9720  A12     : 0x3c047cd8  A13     : 0x0000086c  
+A14     : 0x3c046b20  A15     : 0x00000001  SAR     : 0x0000001f  EXCCAUSE: 0x0000001c  
+EXCVADDR: 0x00000030  LBEG    : 0x400556d5  LEND    : 0x400556e5  LCOUNT  : 0xfffffffa  
+--- 0x400556d5: strlen in ROM
+--- 0x400556e5: strlen in ROM
+
+
+
+Backtrace: 0x42017bc0:0x3fca60c0 0x42009e19:0x3fca6100 0x4037bd09:0x3fca6240
+--- 0x42017bc0: uac_host_device_open at /Users/eggfly/github/esp-iot-solution/examples/usb/host/usb_audio_player/managed_components/espressif__usb_host_uac/uac_host.c:2046
+--- 0x42009e19: uac_lib_task at /Users/eggfly/github/esp-iot-solution/examples/usb/host/usb_audio_player/main/usb_audio_player_main.c:261
+--- 0x4037bd09: vPortTaskWrapper at /Users/eggfly/esp-idf-v5.3.2/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+

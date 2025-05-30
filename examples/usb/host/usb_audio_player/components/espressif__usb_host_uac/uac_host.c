@@ -2367,7 +2367,7 @@ esp_err_t uac_host_device_start(uac_host_device_handle_t uac_dev_handle, const u
     iface->cur_alt = UINT8_MAX;
     for (int i = 0; i < iface->dev_info.iface_alt_num; i++) {
         if (iface->iface_alt[i].dev_alt_param.channels == stream_config->channels &&
-                iface->iface_alt[i].dev_alt_param.bit_resolution == stream_config->bit_resolution) {
+                iface->iface_alt[i].dev_alt_param.bit_resolution >= stream_config->bit_resolution) { // 兼容bit_resolution大于等于需求
             // check if the sample frequency is in the list or in the range
             if (iface->iface_alt[i].dev_alt_param.sample_freq_type > 0) {
                 for (int j = 0; j < iface->iface_alt[i].dev_alt_param.sample_freq_type; j++) {
@@ -2386,12 +2386,48 @@ esp_err_t uac_host_device_start(uac_host_device_handle_t uac_dev_handle, const u
         }
     }
 
+    // 如果没找到合适的alt setting，强制选择bit_resolution为16的alt setting
+    if (iface->cur_alt == UINT8_MAX) {
+        ESP_LOGW(TAG, "[调试] 未找到常规alt，尝试强制选择bit_resolution=16的alt setting");
+        for (int i = 0; i < iface->dev_info.iface_alt_num; i++) {
+            ESP_LOGW(TAG, "[调试] alt[%d]: bit_resolution=%d, channels=%d, sample_freq_type=%d", i+1, iface->iface_alt[i].dev_alt_param.bit_resolution, iface->iface_alt[i].dev_alt_param.channels, iface->iface_alt[i].dev_alt_param.sample_freq_type);
+            if (iface->iface_alt[i].dev_alt_param.bit_resolution <= stream_config->bit_resolution) {
+                // 检查采样率是否匹配
+                if (iface->iface_alt[i].dev_alt_param.sample_freq_type > 0)
+                {
+                    for (int j = 0; j < iface->iface_alt[i].dev_alt_param.sample_freq_type; j++)
+                    {
+                        ESP_LOGW(TAG, "[调试]   alt[%d] sample_freq[%d]=%lu, 目标=%lu", i + 1, j, iface->iface_alt[i].dev_alt_param.sample_freq[j], stream_config->sample_freq);
+                        if (iface->iface_alt[i].dev_alt_param.sample_freq[j] == stream_config->sample_freq)
+                        {
+                            iface->cur_alt = i;
+                            iface->iface_alt[i].cur_sampling_freq = stream_config->sample_freq;
+                            ESP_LOGW(TAG, "[强制] 选择bit_resolution=16的alt setting: alt[%d]", i + 1);
+                            break;
+                        }
+                    }
+                }
+                else if (iface->iface_alt[i].dev_alt_param.sample_freq_lower <= stream_config->sample_freq &&
+                         iface->iface_alt[i].dev_alt_param.sample_freq_upper >= stream_config->sample_freq)
+                {
+                    ESP_LOGW(TAG, "[调试]   alt[%d] sample_freq_lower=%lu, sample_freq_upper=%lu, 目标=%lu", i + 1, iface->iface_alt[i].dev_alt_param.sample_freq_lower, iface->iface_alt[i].dev_alt_param.sample_freq_upper, stream_config->sample_freq);
+                    iface->cur_alt = i;
+                    iface->iface_alt[i].cur_sampling_freq = stream_config->sample_freq;
+                    ESP_LOGW(TAG, "[强制] 选择bit_resolution=16的alt setting: alt[%d]", i + 1);
+                    break;
+                }
+            }
+        }
+    }
+
     UAC_GOTO_ON_FALSE(iface->cur_alt != UINT8_MAX, ESP_ERR_NOT_FOUND, "No suitable alt setting found");
 
     // enqueue multiple transfers to make sure the data is not lost
     iface->xfer_num = CONFIG_UAC_NUM_ISOC_URBS;
     iface->packet_num = CONFIG_UAC_NUM_PACKETS_PER_URB;
     iface->packet_size = iface->iface_alt[iface->cur_alt].cur_sampling_freq * stream_config->channels * stream_config->bit_resolution / 8 / 1000;
+    ESP_LOGI(TAG, "before claim_and_prepare: packet_size %" PRIu32 ", cur_sampling_freq %" PRIu32 ", channels %d, bit_resolution %d, cur_alt %d",
+             iface->packet_size, iface->iface_alt[iface->cur_alt].cur_sampling_freq, stream_config->channels, stream_config->bit_resolution, iface->cur_alt);
     iface->flags |= stream_config->flags;
     // if the packet size is not an integer, we need to add one more byte
     if (iface->iface_alt[iface->cur_alt].cur_sampling_freq * stream_config->channels * stream_config->bit_resolution / 8 % 1000) {

@@ -1,0 +1,429 @@
+
+W (1467) ENUM: Device has more than 1 configuration
+*** Configuration descriptor ***
+bLength 9
+bDescriptorType 2
+wTotalLength 430
+bNumInterfaces 5
+bConfigurationValue 1
+iConfiguration 0
+bmAttributes 0xa0
+bMaxPower 300mA
+*** Interface Association Descriptor ***
+bLength 8
+bDescriptorType 11
+bFirstInterface 0
+bInterfaceCount 3
+bFunctionClass 0x1
+bFunctionSubClass 0x0
+bFunctionProtocol 0x20
+iFunction 0
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 0
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x1
+	bInterfaceProtocol 0x20
+	iInterface 0
+	*** UAC2.0 Audio control header descriptor ***
+	bLength 9
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bcdADC 0x0200
+	bCategory 0x4
+	wTotalLength 145
+	bmControls 0x0
+	*** UAC2.0 Audio control input terminal descriptor ***
+	bLength 17
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bTerminalID 1
+	wTerminalType 0x101
+	bAssocTerminal 0
+	bCSourceID 9
+	bNrChannels 2
+	bmChannelConfig 0x00000003
+	iChannelNames 0
+	iTerminal 0
+	bmControls 0x0
+	iTerminalName 0
+	*** UAC2.0 Audio control feature unit descriptor ***
+	bLength 18
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 2
+	bSourceID 8
+	bmaControls[0] 0x3
+	bmaControls[1] 0x0
+	iFeature 0
+	*** UAC2.0 Audio control output terminal descriptor ***
+	bLength 12
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x3
+	bTerminalID 3
+	wTerminalType 0x402
+	bAssocTerminal 4
+	bSourceID 2
+	bCSourceID 9
+	iTerminal 0
+	bmControls 0x0
+	iTerminalName 0
+	*** UAC2.0 Audio control input terminal descriptor ***
+	bLength 17
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bTerminalID 4
+	wTerminalType 0x402
+	bAssocTerminal 3
+	bCSourceID 10
+	bNrChannels 1
+	bmChannelConfig 0x00000004
+	iChannelNames 0
+	iTerminal 0
+	bmControls 0x0
+	iTerminalName 0
+	*** UAC2.0 Audio control feature unit descriptor ***
+	bLength 14
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 5
+	bSourceID 4
+	bmaControls[0] 0x3
+	bmaControls[1] 0x0
+	iFeature 0
+	*** UAC2.0 Audio control output terminal descriptor ***
+	bLength 12
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x3
+	bTerminalID 6
+	wTerminalType 0x101
+	bAssocTerminal 0
+	bSourceID 5
+	bCSourceID 10
+	iTerminal 0
+	bmControls 0x0
+	iTerminalName 0
+	*** UAC2.0 Audio control feature unit descriptor ***
+	bLength 14
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x6
+	bUnitID 7
+	bSourceID 4
+	bmaControls[0] 0x3
+	bmaControls[1] 0x0
+	iFeature 0
+	*** Unknown descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x4
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x24
+	bDescriptorSubtype 0xa
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x24
+	bDescriptorSubtype 0xa
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x81	EP 1 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 6
+		bInterval 1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 0
+	bNumEndpoints 0
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 1
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** UAC2.0 Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 1
+	bmControls 0x5
+	bFormatType 1
+	bmFormats 0x00000001
+	bNrChannels 2
+	bmChannelConfig 0x00000003
+	iChannelNames 0
+	*** UAC2.0 Audio stream format type I descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bSubslotSize 3
+	bBitResolution 24
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x2	EP 2 OUT
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 288
+		bInterval 1
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x25
+	bDescriptorSubtype 0x1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 1
+	bAlternateSetting 2
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 4
+	*** UAC2.0 Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 1
+	bmControls 0x5
+	bFormatType 1
+	bmFormats 0x00000001
+	bNrChannels 2
+	bmChannelConfig 0x00000003
+	iChannelNames 0
+	*** UAC2.0 Audio stream format type I descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bSubslotSize 2
+	bBitResolution 16
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x2	EP 2 OUT
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 192
+		bInterval 1
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x25
+	bDescriptorSubtype 0x1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 0
+	bNumEndpoints 0
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 1
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** UAC2.0 Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 6
+	bmControls 0x5
+	bFormatType 1
+	bmFormats 0x00000001
+	bNrChannels 1
+	bmChannelConfig 0x00000004
+	iChannelNames 0
+	*** UAC2.0 Audio stream format type I descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bSubslotSize 2
+	bBitResolution 16
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x83	EP 3 IN
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 96
+		bInterval 1
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x25
+	bDescriptorSubtype 0x1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 2
+	bAlternateSetting 2
+	bNumEndpoints 1
+	bInterfaceClass 0x1
+	bInterfaceSubClass 0x2
+	bInterfaceProtocol 0x20
+	iInterface 5
+	*** UAC2.0 Audio stream general descriptor ***
+	bLength 16
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x1
+	bTerminalLink 6
+	bmControls 0x5
+	bFormatType 1
+	bmFormats 0x00000001
+	bNrChannels 1
+	bmChannelConfig 0x00000004
+	iChannelNames 0
+	*** UAC2.0 Audio stream format type I descriptor ***
+	bLength 6
+	bDescriptorType 0x24
+	bDescriptorSubtype 0x2
+	bFormatType 1
+	bSubslotSize 3
+	bBitResolution 24
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x83	EP 3 IN
+		bmAttributes 0xd	ISOC
+		wMaxPacketSize 144
+		bInterval 1
+	*** Unknown descriptor ***
+	bLength 8
+	bDescriptorType 0x25
+	bDescriptorSubtype 0x1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 3
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x3
+	bInterfaceSubClass 0x0
+	bInterfaceProtocol 0x0
+	iInterface 0
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x85	EP 5 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 64
+		bInterval 1
+	*** Interface descriptor ***
+	bLength 9
+	bDescriptorType 4
+	bInterfaceNumber 4
+	bAlternateSetting 0
+	bNumEndpoints 1
+	bInterfaceClass 0x3
+	bInterfaceSubClass 0x0
+	bInterfaceProtocol 0x0
+	iInterface 0
+		*** Endpoint descriptor ***
+		bLength 7
+		bDescriptorType 5
+		bEndpointAddress 0x86	EP 6 IN
+		bmAttributes 0x3	INT
+		wMaxPacketSize 64
+		bInterval 1
+I (2117) uac-host: UAC2.0 device detected, bcdADC=0x0200
+W (2123) uac-host: UAC Interface 1->1, Frequency Number 5 exceed the maximum 4
+W (2131) uac-host: UAC Interface 1->2, Frequency Number 5 exceed the maximum 4
+I (2139) uac-host: UAC2.0设备，增强采样率解析
+I (2145) uac-host: Interface 1 alt[1] 终端ID=1, 时钟源ID=9
+I (2151) uac-host: Clock Source: ID=9, bmAttributes=0x07, bmControls=0x07
+E (2159) USBH: usb_transfer_t num_bytes > data_buffer_size
+E (2165) USB HOST: Submit CTRL URB error: ESP_ERR_INVALID_ARG
+E (2171) uac-host: uac_control_transfer(1672): Unable to submit control transfer
+W (2180) uac-host: UAC2.0 GET_RANGE clock_id=9 failed
+W (2185) uac-host: 无法获取采样率，可能设备不支持GET_RANGE
+I (2193) uac-host: Interface 1 alt[2] 终端ID=1, 时钟源ID=9
+I (2199) uac-host: Clock Source: ID=9, bmAttributes=0x07, bmControls=0x07
+E (2207) USBH: usb_transfer_t num_bytes > data_buffer_size
+E (2213) USB HOST: Submit CTRL URB error: ESP_ERR_INVALID_ARG
+E (2219) uac-host: uac_control_transfer(1672): Unable to submit control transfer
+W (2227) uac-host: UAC2.0 GET_RANGE clock_id=9 failed
+W (2233) uac-host: 无法获取采样率，可能设备不支持GET_RANGE
+I (2241) usb_audio_player: UAC Device connected: SPK
+find UAC 1.0 Speaker device
+interface number: 1
+total alt interfaces number: 2
+--------alt interface[1]--------- 
+channels = 3 
+bit_resolution = 7 
+sample_freq: 
+	2100482
+	524545
+	293
+	6553856
+	1070227660
+--------alt interface[2]--------- 
+channels = 2 
+bit_resolution = 7 
+sample_freq: 
+	12586242
+	524544
+	293
+	6553856
+	1070227660
+E (2277) uac-host: uac_host_device_start(2389): No suitable alt setting found
+ESP_ERROR_CHECK failed: esp_err_t 0x105 (ESP_ERR_NOT_FOUND) at 0x42009f64
+--- 0x42009f64: uac_lib_task at /Users/eggfly/github/esp-iot-solution/examples/usb/host/usb_audio_player/main/usb_audio_player_main.c:271 (discriminator 1)
+
+file: "./main/usb_audio_player_main.c" line 271
+func: uac_lib_task
+expression: uac_host_device_start(uac_device_handle, &stm_config)
+
+abort() was called at PC 0x4037b273 on core 0
+--- 0x4037b273: _esp_error_check_failed at /Users/eggfly/esp-idf-v5.3.2/components/esp_system/esp_err.c:49
+
+
+
+Backtrace: 0x40375b5a:0x3fca6020 0x4037b27d:0x3fca6040 0x40381add:0x3fca6060 0x4037b273:0x3fca60d0 0x42009f64:0x3fca6100 0x4037bd09:0x3fca6240
+--- 0x40375b5a: panic_abort at /Users/eggfly/esp-idf-v5.3.2/components/esp_system/panic.c:463
+--- 0x4037b27d: esp_system_abort at /Users/eggfly/esp-idf-v5.3.2/components/esp_system/port/esp_system_chip.c:92
+--- 0x40381add: abort at /Users/eggfly/esp-idf-v5.3.2/components/newlib/abort.c:38
+--- 0x4037b273: _esp_error_check_failed at /Users/eggfly/esp-idf-v5.3.2/components/esp_system/esp_err.c:49
+--- 0x42009f64: uac_lib_task at /Users/eggfly/github/esp-iot-solution/examples/usb/host/usb_audio_player/main/usb_audio_player_main.c:271 (discriminator 1)
+--- 0x4037bd09: vPortTaskWrapper at /Users/eggfly/esp-idf-v5.3.2/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+
+
+
+
+ELF file SHA256: da8f45477
+
+Rebooting...
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x8 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40375a94
+--- 0x40375a94: esp_restart_noos at /Users/eggfly/esp-idf-v5.3.2/components/esp_system/port/soc/esp32s3/system_internal.c:158
+
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2810,len:0x1c34
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0x1020
+load:0x403cb700,len:0x3164
+entry 0x403c8978
+
+
